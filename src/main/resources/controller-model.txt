@@ -1,0 +1,110 @@
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import vko.framework.base.msg.JsonMsg;
+import vko.framework.mybatis.pager.PageForm;
+
+
+@RequestMapping("cname")
+@Controller
+public class cclass{
+	private Logger logger=LoggerFactory.getLogger(this.getClass());
+	@Autowired
+	private sclass sname;
+	
+	@RequestMapping("test")
+	@ResponseBody
+	public Object testRun(){
+		return "this is run";
+	}
+	
+	@RequestMapping("getPage")
+	@ResponseBody
+	public Object getPage(PageForm page,eclass ename){
+		JsonMsg msg=JsonMsg.newSuccess("成功获取分页数据");
+		try{
+			PagerResponse<eclass> list=this.sname.queryPager(page.genRequest(), ename, null);
+			msg.setData(list);
+		}catch(Exception e){
+			msg.setCode("获取数据出错");
+			this.logger.error("获取分页数据出错",e);
+		}
+		return msg;
+	}
+	
+	
+	@RequestMapping("getObj")
+	@ResponseBody
+	public Object getById(@RequestParam("id")Long id){
+		JsonMsg msg=JsonMsg.newSuccess("成功获取数据");
+		try{
+			eclass ename=this.sname.selectObjById(id);
+			if(ename==null){
+				return msg.setError("对象不存在,id="+id);
+			}
+			msg.setData(ename);
+		}catch(Exception e){
+			msg.setCode("获取对象出错");
+			this.logger.error("获取对象出错",e);
+		}
+		return msg;
+	}
+	
+	
+	@RequestMapping("rmvObj")
+	@ResponseBody
+	public Object rmvObj(@RequestParam("id")Long id){
+		JsonMsg msg=JsonMsg.newSuccess("成功删除");
+		try{
+			eclass ename=this.sname.selectObjById(id);
+			if(ename==null){
+				return msg.setError("对象不存在,id="+id);
+			}
+			this.sname.deleteObjById(id);
+			msg.setData(ename);
+		}catch(Exception e){
+			msg.setCode("删除出错");
+			msg.setData(e.toString());
+			this.logger.error("删除对象出错",e);
+		}
+		return msg;
+	}
+	
+	@RequestMapping("addObj")
+	@ResponseBody
+	public Object addObj(@ModelAttribute eclass ename){
+		JsonMsg msg=JsonMsg.newSuccess("添加成功");
+		try{
+			this.sname.insertObj(ename);
+			msg.setData(ename);
+		}catch(Exception e){
+			msg.setCode("获取数据出错");
+			this.logger.error("添加对象出错",e);
+		}
+		return msg;
+	}
+	
+	@RequestMapping("modObj")
+	@ResponseBody
+	public Object modObj(@ModelAttribute eclass ename){
+		JsonMsg msg=JsonMsg.newSuccess("编辑成功");
+		try{
+			this.sname.updateObjById(ename);
+			msg.setData(ename);
+		}catch(Exception e){
+			msg.setCode("编辑出错");
+			msg.setData(e.toString());
+			this.logger.error("编辑对象出错",e);
+		}
+		return msg;
+	}
+	
+}
